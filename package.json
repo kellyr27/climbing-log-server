@@ -1,0 +1,32 @@
+{
+  "name": "climbing-log-server",
+  "version": "1.0.0",
+  "description": "Server for my climbing log",
+  "main": "app.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kellyr27/climbing-log-server.git"
+  },
+  "author": "Kelly Ristovsky",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kellyr27/climbing-log-server/issues"
+  },
+  "homepage": "https://github.com/kellyr27/climbing-log-server#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "mongoose": "^8.7.1",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "chai": "^5.1.1",
+    "mocha": "^10.7.3",
+    "mongodb-memory-server-core": "^10.1.2",
+    "supertest": "^7.0.0"
+  }
+}
