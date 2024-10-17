@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
-import { STEEPNESS_OPTIONS } from '../configs/constants';
+import { STEEPNESS_OPTIONS } from '../configs/constants.js';
 
 const areaSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
   },
-  user: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
