@@ -17,6 +17,10 @@ const areaSchema = new mongoose.Schema({
 		required: false,
 		default: []
 	}
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 });
 
 const Area = mongoose.model('Area', areaSchema);
