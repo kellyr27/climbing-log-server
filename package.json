@@ -4,7 +4,8 @@
   "description": "Server for my climbing log",
   "main": "app.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test mocha 'tests/**/*.test.js' --file tests/setup.js"
+    "test": "cross-env NODE_ENV=test mocha 'tests/**/*.test.js' --file tests/setup.js",
+    "test:no-console": "cross-env DISABLE_CONSOLE_LOG=true npm test"
   },
   "type": "module",
   "repository": {
