@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { expect } from 'chai';
 import Area from '../../models/area.model.js';
 import User from '../../models/user.model.js';
+import Route from '../../models/route.model.js';
+import Ascent from '../../models/ascent.model.js';
 import { connectDB, disconnectDB } from '../../configs/db.config.js';
 import { STEEPNESS_OPTIONS } from '../../configs/constants.js';
 
@@ -21,6 +23,8 @@ describe('Area Model Test', () => {
 
   afterEach(async () => {
     await Area.deleteMany({});
+    await Route.deleteMany({});
+    await Ascent.deleteMany({});
   });
 
   it('create & save area successfully', async () => {
@@ -104,5 +108,21 @@ describe('Area Model Test', () => {
     expect(savedArea.steepnessTags).to.deep.equal(STEEPNESS_OPTIONS);
   });
 
-  
+  it('create area with duplicate name should fail', async () => {
+    const areaData = { name: 'Test Area', userId };
+
+    const validArea = new Area(areaData);
+    await validArea.save();
+
+    const duplicateArea = new Area(areaData);
+    let err;
+    try {
+      await duplicateArea.save();
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err.name).to.equal('MongoServerError');
+    expect(err.code).to.equal(11000); // MongoDB duplicate key error code
+  });
 });
