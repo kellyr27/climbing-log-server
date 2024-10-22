@@ -143,6 +143,19 @@ describe('Route Model Test', () => {
     expect(isFlashed).to.be.true;
   });
 
+  it('isFlashed method should return false if route was not flashed', async () => {
+    const routeData = { name: 'Test Route', grade: 5, color: ROUTE_COLORS[0], userId, areaId };
+    const validRoute = new Route(routeData);
+    const savedRoute = await validRoute.save();
+
+    const ascentData = { routeId: savedRoute._id, userId, date: new Date(), tickType: 'redpoint' };
+    const validAscent = new Ascent(ascentData);
+    await validAscent.save();
+
+    const isFlashed = await savedRoute.isFlashed();
+    expect(isFlashed).to.be.false;
+  });
+
   it('isSent method should return true if route was sent', async () => {
     const routeData = { name: 'Test Route', grade: 5, color: ROUTE_COLORS[0], userId, areaId };
     const validRoute = new Route(routeData);
@@ -154,6 +167,19 @@ describe('Route Model Test', () => {
 
     const isSent = await savedRoute.isSent();
     expect(isSent).to.be.true;
+  });
+
+  it('isSent method should return false if route was not sent', async () => {
+    const routeData = { name: 'Test Route', grade: 5, color: ROUTE_COLORS[0], userId, areaId };
+    const validRoute = new Route(routeData);
+    const savedRoute = await validRoute.save();
+
+    const ascentData = { routeId: savedRoute._id, userId, date: new Date(), tickType: 'attempt' };
+    const validAscent = new Ascent(ascentData);
+    await validAscent.save();
+
+    const isSent = await savedRoute.isSent();
+    expect(isSent).to.be.false;
   });
 
   it('sessionsToSend method should return correct number of sessions', async () => {

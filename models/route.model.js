@@ -100,7 +100,6 @@ routeSchema.methods.deleteWithDependents = async function() {
     // Delete the route's Area if it has no routes
     if (area) {
       const routeCount = await Route.countDocuments({ areaId: this.areaId }).session(session);
-      console.log('BUS2', routeCount);
       if (routeCount === 0) {
         await area.deleteOne({ session });
       }

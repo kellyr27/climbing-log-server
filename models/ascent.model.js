@@ -37,27 +37,32 @@ ascentSchema.methods.deleteWithDependents = async function() {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    // Delete the ascent
-    await this.deleteOne({session}); // Use deleteOne with session
-
-    // Fetch the route document to get the areaId
+    
+    // Fetch the route and area document to get the areaId
     const route = await Route.findById(this.routeId).session(session);
     if (!route) {
       throw new Error('Route not found');
     }
-    
-    // Delete the route if it's the only ascent
-    const ascentCount = await Ascent.countDocuments({ routeId: this.routeId }).session(session);
-    if (ascentCount === 0) {
-      await Route.findByIdAndRemove(this.routeId).session(session);
+    const area = await Area.findById(route.areaId).session(session);
+    if (!area) {
+      throw new Error('Area not found');
     }
 
-    // Delete the area if it's the only route
-    const routeCount = await Route.countDocuments({ areaId: route.areaId }).session(session);
-    if (routeCount === 0) {
-      await Area.findByIdAndRemove(route.areaId).session(session);
+    // Delete the ascent
+    await this.deleteOne({session}); 
+    
+    // Delete the route if it is the only ascent left
+    const routeAscentsCount = await Ascent.countDocuments({ routeId: route._id }).session(session);
+    if (routeAscentsCount === 0) {
+      await route.deleteOne({session});
     }
-  
+
+    // Delete the area if it is the only route left
+    const areaRoutesCount = await Route.countDocuments({ areaId: area._id }).session(session);
+    if (areaRoutesCount === 0) {
+      await area.deleteOne({session});
+    }
+    
     await session.commitTransaction();
   } catch (error) {
     await session.abortTransaction();
