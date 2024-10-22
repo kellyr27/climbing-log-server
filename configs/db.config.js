@@ -2,18 +2,18 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { MongoMemoryServer } from 'mongodb-memory-server-core';
+import { MongoMemoryReplSet } from 'mongodb-memory-server-core';
 dotenv.config();
 
 let mongoServer;
 const connectDB = async () => {
   try {
     if (process.env.NODE_ENV === 'test') {
-      // mongoServer = await MongoMemoryServer.create();
-      // const mongoUri = mongoServer.getUri();
-      // await mongoose.connect(mongoUri);
 
-      mongoServer = await MongoMemoryServer.create();
+      mongoServer = await MongoMemoryReplSet.create({
+        replSet: { count: 1 }, 
+      });
+      
       const mongoUri = mongoServer.getUri();
       await mongoose.connect(mongoUri);
 
