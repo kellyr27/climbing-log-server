@@ -94,17 +94,19 @@ routeSchema.methods.deleteWithDependents = async function() {
     await Ascent.deleteMany({ routeId: this._id }).session(session);
     
     // Delete the route
-    await this.deleteOne({session});
-
-    // Delete the routes Area if it has no routes
     const area = await Area.findById(this.areaId).session(session);
-    const routeCount = await Route.countDocuments({ areaId: this.areaId }).session(session);
-    if (routeCount === 0) {
-      await area.deleteOne({session});
+    await this.deleteOne({ session });
+    
+    // Delete the route's Area if it has no routes
+    if (area) {
+      const routeCount = await Route.countDocuments({ areaId: this.areaId }).session(session);
+      console.log('BUS2', routeCount);
+      if (routeCount === 0) {
+        await area.deleteOne({ session });
+      }
     }
-
+    
     await session.commitTransaction();
-
   } catch (error) {
     await session.abortTransaction();
     throw error;

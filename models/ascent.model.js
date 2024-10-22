@@ -32,8 +32,6 @@ const ascentSchema = new mongoose.Schema({
   toObject: { virtuals: true },
 });
 
-
-
 // Delete the ascent and its dependents
 ascentSchema.methods.deleteWithDependents = async function() {
   const session = await mongoose.startSession();
@@ -68,7 +66,6 @@ ascentSchema.methods.deleteWithDependents = async function() {
     session.endSession();
   }
 };
-
 
 const Ascent = mongoose.model('Ascent', ascentSchema);
 export default Ascent;
