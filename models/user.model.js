@@ -19,12 +19,6 @@ const userSchema = new mongoose.Schema({
   toObject: { virtuals: false }
 });
 
-// Returns the first ascent date of the user
-userSchema.methods.getFirstAscentDate = async function() {
-  const firstAscent = await Ascent.findOne({ user: this._id }).sort({ date: 1 }).exec();
-  return firstAscent ? firstAscent.date : null;
-};
-
 userSchema.pre('save', async function (next) {
   const user = this;
 

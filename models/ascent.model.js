@@ -32,45 +32,12 @@ const ascentSchema = new mongoose.Schema({
   toObject: { virtuals: true },
 });
 
-// Delete the ascent and its dependents
-ascentSchema.methods.deleteWithDependents = async function() {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    
-    // Fetch the route and area document to get the areaId
-    const route = await Route.findById(this.routeId).session(session);
-    if (!route) {
-      throw new Error('Route not found');
-    }
-    const area = await Area.findById(route.areaId).session(session);
-    if (!area) {
-      throw new Error('Area not found');
-    }
+// Add a virtual field to compute the order based on ASCENT_TICK_TYPES
+ascentSchema.virtual('tickTypeOrder').get(function() {
+  // Find the index of the tickType in the ASCENT_TICK_TYPES array
+  return ASCENT_TICK_TYPES.indexOf(this.tickType);
+});
 
-    // Delete the ascent
-    await this.deleteOne({session}); 
-    
-    // Delete the route if it is the only ascent left
-    const routeAscentsCount = await Ascent.countDocuments({ routeId: route._id }).session(session);
-    if (routeAscentsCount === 0) {
-      await route.deleteOne({session});
-    }
-
-    // Delete the area if it is the only route left
-    const areaRoutesCount = await Route.countDocuments({ areaId: area._id }).session(session);
-    if (areaRoutesCount === 0) {
-      await area.deleteOne({session});
-    }
-    
-    await session.commitTransaction();
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    session.endSession();
-  }
-};
 
 const Ascent = mongoose.model('Ascent', ascentSchema);
 export default Ascent;
