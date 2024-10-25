@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { ROUTE_COLORS, ASCENT_TICK_TYPES } from '../configs/constants.js';
+import { ROUTE_COLORS, ALL_ASCENT_TICK_TYPES, SENT_ASCENT_TICK_TYPES } from '../configs/constants.js';
 import Area from './area.model.js';
 
 /**
@@ -21,17 +21,17 @@ const ascentSchema = new mongoose.Schema({
   },
   tickType: {
     type: String,
-    enum: ASCENT_TICK_TYPES,
+    enum: ALL_ASCENT_TICK_TYPES,
     required: true,
   },
 }, {
   timestamps: true,
 });
 
-// Computes the order based on ASCENT_TICK_TYPES
+// Computes the order based on ALL_ASCENT_TICK_TYPES
 ascentSchema.virtual('tickTypeOrder').get(function() {
-  // Find the index of the tickType in the ASCENT_TICK_TYPES array
-  return ASCENT_TICK_TYPES.indexOf(this.tickType);
+  // Find the index of the tickType in the ALL_ASCENT_TICK_TYPES array
+  return ALL_ASCENT_TICK_TYPES.indexOf(this.tickType);
 });
 
 
@@ -91,18 +91,18 @@ routeSchema.virtual('highestTickType').get(function () {
 });
 
 // Virtual to get whether the route was flashed
-routeSchema.virtual('flashed').get(function () {
+routeSchema.virtual('isFlashed').get(function () {
   return this.highestTickType === 'flash';
 });
 
 // Virtual to get whether the route was sent
-routeSchema.virtual('sent').get(function () {
-  return this.highestTickType === 'flash' || this.highestTickType === 'redpoint';
+routeSchema.virtual('isSent').get(function () {
+  return SENT_ASCENT_TICK_TYPES.includes(this.highestTickType);
 });
 
 // Virtual to get the earliest sent ascent for a route
 routeSchema.virtual('earliestSentAscent').get(function () {
-  return this.ascents.filter(ascent => ascent.tickType === 'flash' || ascent.tickType === 'redpoint')
+  return this.ascents.filter(ascent => SENT_ASCENT_TICK_TYPES.includes(ascent.tickType))
     .sort((a, b) => a.date - b.date)[0] || null;
 });
 
@@ -122,10 +122,13 @@ routeSchema.virtual('sessionsToSend').get(function () {
   return new Set(dates).size;
 });
 
-// Virtual to get the number of ascents for a route
-routeSchema.virtual('ascentCount').get(function () {
+routeSchema.methods.getAscentCount = function () {
   return this.ascents.length;
-});
+};
+
+routeSchema.methods.getTickTypeCount = function (tickType) {
+  return this.ascents.filter(ascent => ascent.tickType === tickType).length;
+};
 
 // Virtual to get the first ascent date for a route
 routeSchema.virtual('firstAscentDate').get(function () {
