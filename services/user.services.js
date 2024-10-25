@@ -111,17 +111,3 @@ export const getMaximumAscentGradeByTickType = async (userId, tickType) => {
     throw error;
   }
 }
-
-export const getMaximumSentAscentGradeByArea = async (userId, areaId) => {
-  try {
-    const routesInArea = await Route.find({ areaId }).exec();
-    const routeIdsInArea = routesInArea.map(route => route._id);
-
-    const maxSentAscent = await Ascent.findOne({ routeId: { $in: routeIdsInArea }, tickType: { $in: ['flash', 'redpoint'] }}).sort({ grade: -1 }).exec();
-    return maxSentAscent ? maxSentAscent.grade : null;
-
-  } catch (error) {
-    // console.error('Error fetching maximum sent ascent grade by area:', error);
-    throw error;
-  }
-}

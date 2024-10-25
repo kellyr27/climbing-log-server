@@ -2,11 +2,10 @@ import mongoose from "mongoose";
 import Ascent from "../models/ascent.model.js";
 import Route from "../models/route.model.js";
 import Area from "../models/area.model.js";
-//FIXME - Change imports to just the Services
 import RouteServices from "./route.services.js";
 import UserServices from "./user.services.js";
-import { getWeekStartDate, getWeekEndDate } from "./utils.services";
-import { ASCENT_TICK_TYPES } from "../../configs/constants.js";
+import UtilsServices from "./utils.services.js";
+import { ALL_ASCENT_TICK_TYPES } from "../../configs/constants.js";
 
 export const deleteWithDependents = async (ascentId) => {
   let session;
@@ -15,13 +14,10 @@ export const deleteWithDependents = async (ascentId) => {
     session.startTransaction();
 
     // Fetch the ascent document
-    const ascent = await Route.ascents.id(session);
-    if (!ascent) {
-      throw new Error("Ascent not found");
+    const route = await Route.findOne({ 'ascents._id': ascentId }).session(session);
+    if (!route) {
+      throw new Error("Route not found");
     }
-
-    // Fetch the route document to get the areaId
-    const route = ascent.parent();
 
     // Fetch the area document
     const area = await Area.findById(route.areaId).session(session);
@@ -30,7 +26,7 @@ export const deleteWithDependents = async (ascentId) => {
     }
 
     // Delete the ascent
-    await ascent.deleteOne().session(session);
+    await route.ascents.id(ascentId).deleteOne().session(session);
 
     // Delete the route if it is the only ascent left
     if (route.ascents.length === 0) {
@@ -66,8 +62,8 @@ export const getWeeklyTickTypeCounts = async (userId) => {
       return [];
     }
 
-    const firstWeekStartDate = getWeekStartDate(firstAscentDate);
-    const lastWeekEndDate = getWeekEndDate(lastAscentDate);
+    const firstWeekStartDate = UtilsServices.getWeekStartDate(firstAscentDate);
+    const lastWeekEndDate = UtilsServices.getWeekEndDate(lastAscentDate);
 
     const tickTypeCounts = [];
 
@@ -77,11 +73,11 @@ export const getWeeklyTickTypeCounts = async (userId) => {
       weekStartDate <= lastWeekEndDate;
       weekStartDate.setDate(weekStartDate.getDate() + 7)
     ) {
-      const weekEndDate = getWeekEndDate(weekStartDate);
+      const weekEndDate = UtilsServices.getWeekEndDate(weekStartDate);
 
       // Batch query for all tick types in the current week
       const countsByTickType = await Promise.all(
-        ASCENT_TICK_TYPES.map(async (tickType) => {
+        ALL_ASCENT_TICK_TYPES.map(async (tickType) => {
           const count = await Ascent.countDocuments({
             userId,
             date: { $gte: weekStartDate, $lte: weekEndDate },

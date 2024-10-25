@@ -3,7 +3,7 @@ import Area from "../models/area.model.js";
 import Route from "../models/route.model.js";
 import AscentServices from "./ascent.services.js";
 import UtilsServices from "./utils.services.js";
-import { ASCENT_TICK_TYPES } from '../../configs/constants.js';
+import { ALL_ASCENT_TICK_TYPES } from '../../configs/constants.js';
 
 export const deleteWithDependents = async (routeId) => {
   let session;
@@ -49,7 +49,7 @@ export const getGradeBestTickTypeCounts = async (userId) => {
         total: 0,
       };
 
-      for (const tickType of ASCENT_TICK_TYPES) {
+      for (const tickType of ALL_ASCENT_TICK_TYPES) {
         gradeStats[i][tickType] = 0;
       }
     }
