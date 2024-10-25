@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import Ascent from './ascent.model.js';
 
 const userSchema = new mongoose.Schema({
   username: {
