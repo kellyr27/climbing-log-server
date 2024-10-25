@@ -1,127 +1,9 @@
 import mongoose from "mongoose";
-import Ascent from "../models/ascent.model.js";
 import Area from "../models/area.model.js";
 import Route from "../models/route.model.js";
 import AscentServices from "./ascent.services.js";
 import UtilsServices from "./utils.services.js";
 import { ASCENT_TICK_TYPES } from '../../configs/constants.js';
-
-
-/**
- * Checks if a route has been flashed.
- * @param {ObjectId} routeId - The ID of the route.
- * @returns {Promise<boolean>} - True if the route has been flashed, false otherwise.
- */
-export const isFlashed = async (routeId) => {
-  try {
-    const ascent = await Ascent.findOne({
-      routeId,
-      tickType: "flash",
-    }).exec();
-    return !!ascent;
-  } catch (error) {
-    // console.error('Error checking if route is flashed:', error);
-    throw error;
-  }
-};
-
-/**
- * Checks if a route has been sent.
- * @param {ObjectId} routeId - The ID of the route.
- * @returns {Promise<boolean>} - True if the route has been sent, false otherwise.
- */
-export const isSent = async (routeId) => {
-  try {
-    const ascent = await Ascent.findOne({
-      routeId,
-      tickType: { $in: ["flash", "redpoint"] },
-    }).exec();
-    return !!ascent;
-  } catch (error) {
-    // console.error('Error checking if route is sent:', error);
-    throw error;
-  }
-};
-
-export const getHighestTickType = async (routeId) => {
-  try {
-    const ascent = await Ascent.findOne({ routeId }).sort({ tickTypeOrder: -1 }).exec();
-    return ascent ? ascent.tickType : null;
-  } catch (error) {
-    // console.error('Error fetching highest tick type:', error);
-    throw error;
-  }
-}
-
-/**
- * Gets the earliest sent ascent for a route.
- * @param {ObjectId} routeId - The ID of the route.
- * @returns {Promise<Ascent|null>} - The earliest sent ascent or null if not found.
- */
-export const getEarliestSentAscent = async (routeId) => {
-  try {
-    const ascent = await Ascent.findOne({ routeId, tickType: { $in: ['flash', 'redpoint'] } })
-      .sort({ date: 1, createdAt: 1 })
-      .exec();
-    return ascent ? ascent : null;
-  } catch (error) {
-    // console.error('Error fetching earliest sent ascent:', error);
-    throw error;
-  }
-}
-
-export const sessionsToSend = async (routeId) => {
-  try {
-    if (await isFlashed(routeId)) return 0;
-
-    const earliestSentAscent = await Ascent.findOne({ 
-      routeId, 
-      tickType: 'redpoint' 
-    }).sort({ date: 1 }).exec();
-
-    if (!earliestSentAscent) return null;
-
-    const dates = await Ascent.find({ 
-      routeId, 
-      date: { $lt: earliestSentAscent.date } 
-    }).distinct('date').exec();
-
-    return dates.length;
-  } catch (error) {
-    // console.error('Error calculating sessions to send:', error);
-    throw error;
-  }
-};
-
-/**
- * Gets the date of the first ascent for a route.
- * @param {ObjectId} routeId - The ID of the route.
- * @returns {Promise<Date|null>} - The date of the first ascent or null if not found.
- */
-export const firstAscentDate = async (routeId) => {
-  try {
-    const ascent = await Ascent.findOne({ routeId }).sort({ date: 1 }).exec();
-    return ascent ? ascent.date : null;
-  } catch (error) {
-    // console.error('Error fetching first ascent date:', error);
-    throw error;
-  }
-};
-
-/**
- * Gets the date of the last ascent for a route.
- * @param {ObjectId} routeId - The ID of the route.
- * @returns {Promise<Date|null>} - The date of the last ascent or null if not found.
- */
-export const lastAscentDate = async (routeId) => {
-  try {
-    const ascent = await Ascent.findOne({ routeId }).sort({ date: -1 }).exec();
-    return ascent ? ascent.date : null;
-  } catch (error) {
-    // console.error('Error fetching last ascent date:', error);
-    throw error;
-  }
-};
 
 export const deleteWithDependents = async (routeId) => {
   let session;
@@ -129,9 +11,6 @@ export const deleteWithDependents = async (routeId) => {
     session = await mongoose.startSession();
     session.startTransaction();
 
-    // Delete all ascents of the route
-    await Ascent.deleteMany({ routeId }).session(session);
-    
     // Delete the route
     const route = await Route.findById(routeId).session(session);
     if (!route) {

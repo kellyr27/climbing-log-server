@@ -4,11 +4,7 @@ import Route from "../models/route.model.js";
 import Area from "../models/area.model.js";
 //FIXME - Change imports to just the Services
 import RouteServices from "./route.services.js";
-import {
-  getFirstAscentDate,
-  getLastAscentDate,
-  getMaximumAscentGradeByTickType,
-} from "./user.services";
+import UserServices from "./user.services.js";
 import { getWeekStartDate, getWeekEndDate } from "./utils.services";
 import { ASCENT_TICK_TYPES } from "../../configs/constants.js";
 
@@ -19,16 +15,13 @@ export const deleteWithDependents = async (ascentId) => {
     session.startTransaction();
 
     // Fetch the ascent document
-    const ascent = await Ascent.findById(ascentId).session(session);
+    const ascent = await Route.ascents.id(session);
     if (!ascent) {
       throw new Error("Ascent not found");
     }
 
     // Fetch the route document to get the areaId
-    const route = await Route.findById(ascent.routeId).session(session);
-    if (!route) {
-      throw new Error("Route not found");
-    }
+    const route = ascent.parent();
 
     // Fetch the area document
     const area = await Area.findById(route.areaId).session(session);
@@ -37,14 +30,11 @@ export const deleteWithDependents = async (ascentId) => {
     }
 
     // Delete the ascent
-    await Ascent.findByIdAndDelete(ascentId).session(session);
+    await ascent.deleteOne().session(session);
 
     // Delete the route if it is the only ascent left
-    const routeAscentsCount = await Ascent.countDocuments({
-      routeId: route._id,
-    }).session(session);
-    if (routeAscentsCount === 0) {
-      await Route.findByIdAndDelete(route._id).session(session);
+    if (route.ascents.length === 0) {
+      await route.deleteOne().session(session);
     }
 
     // Delete the area if it is the only route left
@@ -52,28 +42,25 @@ export const deleteWithDependents = async (ascentId) => {
       areaId: area._id,
     }).session(session);
     if (areaRoutesCount === 0) {
-      await Area.findByIdAndDelete(area._id).session(session);
+      await area.deleteOne().session(session);
     }
 
     await session.commitTransaction();
   } catch (error) {
-    if (session) {
-      await session.abortTransaction();
-    }
+    if (session) await session.abortTransaction();
+
     console.error("Error deleting ascent with dependents:", error);
     throw error;
   } finally {
-    if (session) {
-      session.endSession();
-    }
+    if (session) session.endSession();
   }
 };
 
 //TODO - CHange to object from array
 export const getWeeklyTickTypeCounts = async (userId) => {
   try {
-    const firstAscentDate = await getFirstAscentDate(userId);
-    const lastAscentDate = await getLastAscentDate(userId);
+    const firstAscentDate = await UserServices.getFirstAscentDate(userId);
+    const lastAscentDate = await UserServices.getLastAscentDate(userId);
 
     if (!firstAscentDate || !lastAscentDate) {
       return [];
@@ -128,7 +115,7 @@ export const getWeeklyTickTypeCounts = async (userId) => {
 
 export const getBestAscentsByTickType = async (userId, tickType) => {
   try {
-    const maximumAscentGrade = getMaximumAscentGradeByTickType(
+    const maximumAscentGrade = UserServices.getMaximumAscentGradeByTickType(
       userId,
       tickType
     );
