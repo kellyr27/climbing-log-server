@@ -42,7 +42,6 @@ export const getGradeBestTickTypeCounts = async (userId) => {
     const maxGrade = AscentServices.getMaximumAscentGrade(userId);
 
     const gradeStats = {};
-
     for (let i = minGrade; i <= maxGrade; i++) {
       gradeStats[i] = {
         grade: i,
@@ -56,7 +55,7 @@ export const getGradeBestTickTypeCounts = async (userId) => {
 
     // For each route, get the highest tick type for the user and store a count for each grade
     for (const route of routes) {
-      const highestTickType = await getHighestTickType(route._id);
+      const highestTickType = route.highestTickType;
       if (highestTickType) {
         gradeStats[route.grade][highestTickType]++;
         gradeStats[route.grade].total++;
@@ -78,7 +77,6 @@ export const getGradeOndraScores = async (userId) => {
     const maxGrade = AscentServices.getMaximumAscentGrade(userId);
 
     const gradeStats = {};
-
     for (let i = minGrade; i <= maxGrade; i++) {
       gradeStats[i] = {
         grade: i,

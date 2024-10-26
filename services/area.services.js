@@ -1,4 +1,5 @@
 import Route from "../models/route.model";
+import Area from "../models/area.model";
 
 //TODO: Error checking
 export const getMaximumSentAscentGradeByArea = async (areaId) => {
@@ -15,3 +16,12 @@ export const getMaximumSentAscentGradeByArea = async (areaId) => {
     throw error;
   }
 };
+
+export const getAllAreas = async () => {
+  try {
+    const areas = await Area.find().exec();
+    return areas;
+  } catch (error) {
+    throw error;
+  }
+}

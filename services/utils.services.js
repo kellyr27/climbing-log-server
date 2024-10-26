@@ -42,5 +42,4 @@ export const getOndraScore = (sessionsToSend) => {
   }, 0);
 
   return ondraScore;
-
 }

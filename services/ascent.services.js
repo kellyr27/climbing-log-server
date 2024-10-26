@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import Ascent from "../models/ascent.model.js";
 import Route from "../models/route.model.js";
 import Area from "../models/area.model.js";
 import RouteServices from "./route.services.js";
@@ -57,10 +56,6 @@ export const getWeeklyTickTypeCounts = async (userId) => {
   try {
     const firstAscentDate = await UserServices.getFirstAscentDate(userId);
     const lastAscentDate = await UserServices.getLastAscentDate(userId);
-
-    if (!firstAscentDate || !lastAscentDate) {
-      return [];
-    }
 
     const firstWeekStartDate = UtilsServices.getWeekStartDate(firstAscentDate);
     const lastWeekEndDate = UtilsServices.getWeekEndDate(lastAscentDate);
