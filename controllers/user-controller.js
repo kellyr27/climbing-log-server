@@ -6,33 +6,30 @@ import validateSchemas from '../middlewares/validateSchemas.js';
 
 dotenv.config();
 
-export const register = [
-  validateSchemas({ user: userSchema }),
-  async (req, res, next) => {
-    try {
-      const { user: userData } = req.body;
-      const { username, password } = userData;
+export const registerUser = async (req, res, next) => {
+  try {
+    const { user: userData } = req.body;
+    const { username, password } = userData;
 
-      // Check if username already exists
-      const existingUser = await User.findOne({ username });
-      if (existingUser) {
-        const error = new Error('Username already taken');
-        error.status = 400;
-        throw error;
-      }
-
-      const newUser = new User({ username, password });
-      await newUser.save();
-
-      const token = newUser.generateAuthToken();
-      res.status(201).json({ token });
-    } catch (error) {
-      next(error);
+    // Check if username already exists
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      const error = new Error('Username already taken');
+      error.status = 400;
+      throw error;
     }
-  },
-];
 
-export const login = [
+    const newUser = new User({ username, password });
+    await newUser.save();
+
+    const token = newUser.generateAuthToken();
+    res.status(201).json({ token });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export const loginUser = [
   validateSchemas({ user: userSchema }),
   async (req, res, next) => {
     try {
