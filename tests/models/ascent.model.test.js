@@ -5,7 +5,7 @@ import Route from '../../models/route.model.js';
 import Area from '../../models/area.model.js';
 import User from '../../models/user.model.js';
 import { connectDB, disconnectDB } from '../../configs/db.config.js';
-import { ASCENT_TICK_TYPES } from '../../configs/constants.js';
+import { ALL_ASCENT_TICK_TYPES } from '../../configs/constants.js';
 
 describe('Ascent Model Tests', () => {
   let userId;
@@ -46,7 +46,7 @@ describe('Ascent Model Tests', () => {
       userId,
       date: new Date(),
       notes: 'First ascent',
-      tickType: ASCENT_TICK_TYPES[0], // Use the first tick type
+      tickType: ALL_ASCENT_TICK_TYPES[0], // Use the first tick type
     };
 
     const validAscent = new Ascent(ascentData);
@@ -64,7 +64,7 @@ describe('Ascent Model Tests', () => {
       userId,
       date: new Date(),
       notes: 'First ascent',
-      tickType: ASCENT_TICK_TYPES[0],
+      tickType: ALL_ASCENT_TICK_TYPES[0],
     };
 
     const invalidAscent = new Ascent(ascentData);
